@@ -1,0 +1,84 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>💩 Poop Breakout 🚽</title>
+    <link rel="stylesheet" href="./src/styles/index.css" />
+  </head>
+  <body>
+    <div id="app">
+      <canvas id="gameCanvas"></canvas>
+      <div id="ui-overlay">
+
+        <div id="start-screen" class="screen active">
+          <div class="screen-content">
+            <div class="title-emoji">💩</div>
+            <h1 class="game-title">POOP BREAKOUT</h1>
+            <p class="subtitle">The stinkiest breakout game ever made</p>
+            <div class="legend">
+              <div class="legend-item"><span class="legend-emoji">💩</span><span>Poop — 1–5 hits</span></div>
+              <div class="legend-item"><span class="legend-emoji">🚽</span><span>Toilet — 2–10 hits</span></div>
+            </div>
+            <div class="controls-info">
+              <p>🖱️ Move mouse / touch to control paddle</p>
+              <p>⌨️ Or use ← → arrow keys</p>
+              <p>⎵ Space / click to launch ball</p>
+            </div>
+            <div id="saved-progress" class="saved-progress" style="display:none">
+              <p>📂 Saved progress found!</p>
+              <p id="saved-info"></p>
+              <div class="btn-row">
+                <button class="btn-start btn-secondary" id="newGameBtn">NEW GAME</button>
+                <button class="btn-start" id="continueBtn">CONTINUE 🚽</button>
+              </div>
+            </div>
+            <button class="btn-start" id="startBtn">FLUSH IT! 🚽</button>
+          </div>
+        </div>
+
+        <div id="game-over-screen" class="screen">
+          <div class="screen-content">
+            <div class="title-emoji">😭</div>
+            <h2 class="screen-title">GAME OVER</h2>
+            <p class="screen-subtitle">The toilet has beaten you.</p>
+            <p class="final-score">Score: <span id="finalScore">0</span></p>
+            <p class="final-score">Level: <span id="finalLevel">1</span> / 100</p>
+            <p class="final-high">Best: <span id="finalHigh">0</span></p>
+            <div class="btn-row">
+              <button class="btn-start btn-secondary" id="shareGameOverBtn">SHARE 📤</button>
+              <button class="btn-start" id="restartBtn">TRY AGAIN 💩</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="level-complete-screen" class="screen">
+          <div class="screen-content">
+            <div class="title-emoji">🎉</div>
+            <h2 class="screen-title">LEVEL CLEAR!</h2>
+            <p class="screen-subtitle">The toilets have been defeated!</p>
+            <p class="final-score">Score: <span id="levelScore">0</span></p>
+            <p class="final-score" id="nextLevelInfo">Next: Level 2 / 100</p>
+            <button class="btn-start" id="nextLevelBtn">NEXT LEVEL 💩</button>
+          </div>
+        </div>
+
+        <div id="win-screen" class="screen">
+          <div class="screen-content">
+            <div class="title-emoji">🏆</div>
+            <h2 class="screen-title">YOU WIN!</h2>
+            <p class="screen-subtitle">All 100 levels cleared. You're a legend!</p>
+            <p class="final-score">Final Score: <span id="winScore">0</span></p>
+            <p class="final-high">Best Ever: <span id="winHigh">0</span></p>
+            <div class="btn-row">
+              <button class="btn-start btn-secondary" id="shareWinBtn">SHARE 📤</button>
+              <button class="btn-start" id="playAgainBtn">PLAY AGAIN 💩</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    <script type="module" src="./src/main.ts"></script>
+  </body>
+</html>
