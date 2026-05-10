@@ -6,17 +6,22 @@ type Persistence = {
   clear(): Promise<void>;
 };
 
-export const persistence: Persistence = {
-  setItem(key, value) {
-    return window.persistentStorage.setItem(key, value);
+const store: Persistence = (window as any).persistentStorage ?? {
+  setItem(key: string, value: string) {
+    localStorage.setItem(key, value);
+    return Promise.resolve();
   },
-  getItem(key) {
-    return window.persistentStorage.getItem(key);
+  getItem(key: string) {
+    return Promise.resolve(localStorage.getItem(key));
   },
-  removeItem(key) {
-    return window.persistentStorage.removeItem(key);
+  removeItem(key: string) {
+    localStorage.removeItem(key);
+    return Promise.resolve();
   },
   clear() {
-    return window.persistentStorage.clear();
+    localStorage.clear();
+    return Promise.resolve();
   },
 };
+
+export const persistence: Persistence = store;
