@@ -26,7 +26,7 @@ export const TOTAL_LEVELS = 100;
 
 // ─── Brick Types ──────────────────────────────────────────────────────────────
 
-export const enum BrickType {
+export enum BrickType {
   POOP   = 'poop',
   TOILET = 'toilet',
   EMPTY  = 'empty',
@@ -34,7 +34,7 @@ export const enum BrickType {
 
 // ─── Game States ──────────────────────────────────────────────────────────────
 
-export const enum GameState {
+export enum GameState {
   START        = 'start',
   PLAYING      = 'playing',
   PAUSED       = 'paused',
