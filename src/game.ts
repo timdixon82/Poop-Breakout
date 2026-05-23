@@ -10,7 +10,7 @@ import {
   SCORE_POOP_PER_HIT, SCORE_TOILET_PER_HIT,
 } from "./definitions";
 
-import { Ball, Brick, GameData, Paddle, Particle, FlashMessage } from "./entities";
+import { Ball, Brick, GameData, Paddle } from "./entities";
 import { clamp, lerp, normalizeVec2, randomRange, spawnParticles } from "./utils";
 import { drawHUD } from "./ui";
 import { generateLayout, getHitValues, getLevelSpeedMult } from "./levelgen";
@@ -338,7 +338,7 @@ export class PoopBreakout {
     }
   }
 
-  private updateBall(dt: number): void {
+  private updateBall(_dt: number): void {
     const d      = this.data;
     const ball   = d.ball;
     const paddle = d.paddle;

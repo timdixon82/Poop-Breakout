@@ -8,17 +8,9 @@ type Grid = Cell[][];
 const R = BRICK_ROWS;  // 6
 const C = BRICK_COLS;  // 10
 
-// ─── Helper to fill a full grid ───────────────────────────────────────────────
-function fullGrid(cell: Cell = 'P'): Grid {
-  return Array.from({ length: R }, () => Array(C).fill(cell));
-}
-
+// ─── Grid helpers ─────────────────────────────────────────────────────────────
 function emptyGrid(): Grid {
   return Array.from({ length: R }, () => Array(C).fill('_'));
-}
-
-function clone(g: Grid): Grid {
-  return g.map(r => [...r]);
 }
 
 // ─── Shape stamps (row, col offsets) ─────────────────────────────────────────

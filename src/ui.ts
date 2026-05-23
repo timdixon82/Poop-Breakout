@@ -1,7 +1,6 @@
 
 import { GameData } from "./entities";
-import { CANVAS_WIDTH, LIVES_START, TOTAL_LEVELS } from "./definitions";
-import { getHitValues } from "./levelgen";
+import { CANVAS_WIDTH, TOTAL_LEVELS } from "./definitions";
 
 // ─── HUD drawing ─────────────────────────────────────────────────────────────
 
