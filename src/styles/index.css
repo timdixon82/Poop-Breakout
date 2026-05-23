@@ -211,7 +211,8 @@ body {
   background: linear-gradient(135deg, #7c00ff, #c940ff);
   border: none;
   border-radius: 12px;
-  padding: 14px 26px;
+  padding: 16px 26px; /* was 14px — raised to meet WCAG 2.5.5 AAA 44 px touch target */
+  min-height: 44px;   /* belt-and-braces: guarantees threshold if font metrics vary */
   cursor: pointer;
   letter-spacing: 1px;
   box-shadow: 0 4px 20px rgb(150 0 255 / 0.6), 0 0 0 2px rgb(255 255 255 / 0.1);
