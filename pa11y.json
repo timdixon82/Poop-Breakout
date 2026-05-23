@@ -1,3 +1,5 @@
 {
-  "chromiumFlags": ["--no-sandbox", "--disable-setuid-sandbox"]
+  "chromeLaunchConfig": {
+    "args": ["--no-sandbox", "--disable-setuid-sandbox"]
+  }
 }
