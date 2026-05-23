@@ -25,7 +25,7 @@ The main branch has the team's standard initial branch-protection rules: a pull 
 Five workflow files are present in `.github/workflows/`:
 
 - `lint-and-build.yml`: runs ESLint, Stylelint, and html-validate, then runs `vite build`. Must pass on every pull request.
-- `accessibility.yml`: runs Pa11y against the built output. Uses `--chromium-flags="--no-sandbox"` for the GitHub Actions Ubuntu runner. Must pass on every pull request.
+- `accessibility.yml`: runs Pa11y against the built output. Chromium runner flags (`--no-sandbox`, `--disable-setuid-sandbox`) are set in `pa11y.json` at the repository root; Pa11y reads the file automatically. Must pass on every pull request.
 - `security.yml`: runs Semgrep, Trivy, and the GitHub dependency-review action. Must pass on every pull request.
 - `codeql.yml`: GitHub CodeQL analysis. Must pass on every pull request.
 - `release.yml`: release-please on push to main, then deploys to GitHub Pages on a new release tag.

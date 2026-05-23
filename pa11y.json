@@ -1,0 +1,3 @@
+{
+  "chromiumFlags": ["--no-sandbox", "--disable-setuid-sandbox"]
+}

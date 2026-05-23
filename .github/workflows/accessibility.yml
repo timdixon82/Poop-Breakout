@@ -49,7 +49,7 @@ jobs:
         run: npx wait-on http://localhost:8080 --timeout 15000
 
       - name: Pa11y at WCAG 2.2 AAA
-        run: pa11y --standard WCAG2AAA --chromium-flags="--no-sandbox" "http://localhost:8080/Poop-Breakout/"
+        run: pa11y --standard WCAG2AAA "http://localhost:8080/Poop-Breakout/"
 
       - name: axe-core at WCAG 2.2 AAA
         run: axe "http://localhost:8080/Poop-Breakout/" --tags wcag2a,wcag2aa,wcag2aaa,wcag22aa,wcag22aaa --chrome-options="no-sandbox"
