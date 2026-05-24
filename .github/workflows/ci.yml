@@ -1,0 +1,49 @@
+# Continuous integration for Poop-Breakout (Vite + TypeScript static front-end).
+#
+# Runs on every pull request and on pushes to main.
+# Steps: check out, install pinned dependencies, run tsc --noEmit, then the
+# three linters (html-validate, stylelint, eslint), then vite build.
+# Linters are pinned in package.json; CI installs them with npm ci from the
+# committed package-lock.json, then runs them through npm scripts.
+#
+# Security note: no untrusted GitHub context variables are interpolated into
+# any run step. All run commands are fixed strings.
+#
+# Action SHAs verified on 2026-05-23.
+
+name: CI
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  lint-and-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e  # v6.4.0
+        with:
+          node-version: lts/*
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint HTML
+        run: npm run lint:html
+
+      - name: Lint CSS
+        run: npm run lint:css
+
+      - name: Lint TypeScript
+        run: npm run lint:ts
+
+      - name: Build
+        run: npm run build

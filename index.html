@@ -2,83 +2,137 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
-    <title>💩 Poop Breakout 🚽</title>
-    <link rel="stylesheet" href="./src/styles/index.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Plain page title for reliable screen-reader announcement.
+         The emoji and full game title live in the visible H1 below with
+         proper ARIA labelling. Decision: docs/decisions/002-page-title-pattern.md -->
+    <title>Poop Breakout</title>
+
+    <!-- Content Security Policy delivered via meta tag (GitHub Pages cannot
+         send HTTP response headers). The GoatCounter beacon uses
+         navigator.sendBeacon to connect-src timdixon82.goatcounter.com.
+         Font files are self-hosted (font-src 'self').
+         Decision: docs/exceptions/SEC-001-missing-response-headers.md -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; font-src 'self'; connect-src https://timdixon82.goatcounter.com; img-src 'self' https://timdixon82.goatcounter.com; object-src 'none'; base-uri 'self'; frame-ancestors 'none'">
+
+    <!-- Referrer Policy: share the path but not the full URL on cross-origin
+         navigation, and do not send a referrer on downgrade. -->
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+
+    <link rel="stylesheet" href="./src/styles/index.css">
   </head>
   <body>
-    <div id="app">
-      <canvas id="gameCanvas"></canvas>
+    <!-- Hidden live region: the game loop writes state changes here so
+         VoiceOver and JAWS users receive audio feedback without needing
+         to see the canvas. See docs/exceptions/ACC-001-canvas-game-accessibility.md
+         for the full gap analysis and the roadmap for future enhancements. -->
+    <div id="game-announcer"
+         aria-live="polite"
+         aria-atomic="false"
+         class="sr-only"></div>
+
+    <main id="app">
+      <!-- The canvas carries role="application" because it is an interactive
+           game region, not a static image. The aria-label names the region for
+           VoiceOver and JAWS users who navigate by landmark. -->
+      <canvas id="gameCanvas"
+              role="application"
+              aria-label="Poop Breakout game area"></canvas>
       <div id="ui-overlay">
 
         <div id="start-screen" class="screen active">
           <div class="screen-content">
-            <div class="title-emoji">💩</div>
-            <h1 class="game-title">POOP BREAKOUT</h1>
+            <!-- Q62B implementation: the emoji live in aria-hidden spans inside
+                 the H1. The H1 text node "POOP BREAKOUT" is the accessible name;
+                 the emoji are visual decoration only. The page title above is
+                 plain text. Decision: docs/decisions/002-page-title-pattern.md -->
+            <div class="title-emoji" aria-hidden="true">💩</div>
+            <h1 class="game-title">
+              <span aria-hidden="true">💩</span> POOP BREAKOUT <span aria-hidden="true">💩</span>
+            </h1>
             <p class="subtitle">The stinkiest breakout game ever made</p>
             <div class="legend">
-              <div class="legend-item"><span class="legend-emoji">💩</span><span>Poop — 1–5 hits</span></div>
-              <div class="legend-item"><span class="legend-emoji">🚽</span><span>Toilet — 2–10 hits</span></div>
-            </div>
-            <div class="controls-info">
-              <p>🖱️ Move mouse / touch to control paddle</p>
-              <p>⌨️ Or use ← → arrow keys</p>
-              <p>⎵ Space / click to launch ball</p>
-            </div>
-            <div id="saved-progress" class="saved-progress" style="display:none">
-              <p>📂 Saved progress found!</p>
-              <p id="saved-info"></p>
-              <div class="btn-row">
-                <button class="btn-start btn-secondary" id="newGameBtn">NEW GAME</button>
-                <button class="btn-start" id="continueBtn">CONTINUE 🚽</button>
+              <div class="legend-item">
+                <span class="legend-emoji" aria-hidden="true">💩</span>
+                <span>Poop — 1 to 5 hits</span>
+              </div>
+              <div class="legend-item">
+                <span class="legend-emoji" aria-hidden="true">🚽</span>
+                <span>Toilet — 2 to 10 hits</span>
               </div>
             </div>
-            <button class="btn-start" id="startBtn">FLUSH IT! 🚽</button>
+            <!-- Keyboard-first controls per team standard (CLAUDE.md):
+                 keyboard instruction listed first. -->
+            <div class="controls-info">
+              <p>Left and right arrow keys move the paddle</p>
+              <p>Space bar, click, or tap to launch the ball</p>
+            </div>
+            <div id="saved-progress" class="saved-progress" style="display:none">
+              <p>Saved progress found</p>
+              <p id="saved-info"></p>
+              <div class="btn-row">
+                <button class="btn-start btn-secondary" type="button" id="newGameBtn">NEW GAME</button>
+                <button class="btn-start" type="button" id="continueBtn">CONTINUE</button>
+              </div>
+            </div>
+            <button class="btn-start" type="button" id="startBtn">FLUSH IT!</button>
           </div>
         </div>
 
         <div id="game-over-screen" class="screen">
           <div class="screen-content">
-            <div class="title-emoji">😭</div>
+            <div class="title-emoji" aria-hidden="true">😭</div>
             <h2 class="screen-title">GAME OVER</h2>
             <p class="screen-subtitle">The toilet has beaten you.</p>
             <p class="final-score">Score: <span id="finalScore">0</span></p>
             <p class="final-score">Level: <span id="finalLevel">1</span> / 100</p>
             <p class="final-high">Best: <span id="finalHigh">0</span></p>
             <div class="btn-row">
-              <button class="btn-start btn-secondary" id="shareGameOverBtn">SHARE 📤</button>
-              <button class="btn-start" id="restartBtn">TRY AGAIN 💩</button>
+              <button class="btn-start btn-secondary" type="button" id="shareGameOverBtn">SHARE</button>
+              <button class="btn-start" type="button" id="restartBtn">TRY AGAIN</button>
             </div>
           </div>
         </div>
 
         <div id="level-complete-screen" class="screen">
           <div class="screen-content">
-            <div class="title-emoji">🎉</div>
+            <div class="title-emoji" aria-hidden="true">🎉</div>
             <h2 class="screen-title">LEVEL CLEAR!</h2>
             <p class="screen-subtitle">The toilets have been defeated!</p>
             <p class="final-score">Score: <span id="levelScore">0</span></p>
             <p class="final-score" id="nextLevelInfo">Next: Level 2 / 100</p>
-            <button class="btn-start" id="nextLevelBtn">NEXT LEVEL 💩</button>
+            <button class="btn-start" type="button" id="nextLevelBtn">NEXT LEVEL</button>
           </div>
         </div>
 
         <div id="win-screen" class="screen">
           <div class="screen-content">
-            <div class="title-emoji">🏆</div>
+            <div class="title-emoji" aria-hidden="true">🏆</div>
             <h2 class="screen-title">YOU WIN!</h2>
-            <p class="screen-subtitle">All 100 levels cleared. You're a legend!</p>
+            <p class="screen-subtitle">All 100 levels cleared. You are a legend!</p>
             <p class="final-score">Final Score: <span id="winScore">0</span></p>
             <p class="final-high">Best Ever: <span id="winHigh">0</span></p>
             <div class="btn-row">
-              <button class="btn-start btn-secondary" id="shareWinBtn">SHARE 📤</button>
-              <button class="btn-start" id="playAgainBtn">PLAY AGAIN 💩</button>
+              <button class="btn-start btn-secondary" type="button" id="shareWinBtn">SHARE</button>
+              <button class="btn-start" type="button" id="playAgainBtn">PLAY AGAIN</button>
             </div>
           </div>
         </div>
 
       </div>
-    </div>
+    </main>
     <script type="module" src="./src/main.ts"></script>
+
+    <!-- GoatCounter analytics. Self-hosted count.js per the team pattern at
+         docs/patterns/goatcounter-analytics.md. Tracker URL:
+         https://timdixon82.goatcounter.com/count (team default).
+         Privacy: no personal data collected; no consent banner required under
+         UK GDPR. Full privacy note in docs/privacy.md. -->
+    <script
+      data-goatcounter="https://timdixon82.goatcounter.com/count"
+      async
+      src="./assets/analytics/count.js"></script>
   </body>
 </html>

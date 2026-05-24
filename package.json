@@ -2,13 +2,31 @@
   "name": "poop-breakout",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
+  "description": "A poop-themed Breakout arcade game in TypeScript.",
+  "license": "GPL-3.0-only",
+  "author": "Tim Dixon",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/timdixon82/Poop-Breakout.git"
+  },
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview"
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "lint:html": "html-validate index.html",
+    "lint:css": "stylelint src/styles/index.css",
+    "lint:ts": "eslint src",
+    "lint": "npm run lint:html && npm run lint:css && npm run lint:ts"
   },
   "devDependencies": {
-    "typescript": "^5.4.0",
-    "vite": "^5.4.0"
+    "@typescript-eslint/eslint-plugin": "8.32.1",
+    "@typescript-eslint/parser": "8.32.1",
+    "eslint": "9.26.0",
+    "html-validate": "11.2.0",
+    "stylelint": "17.12.0",
+    "stylelint-config-standard": "40.0.0",
+    "typescript": "5.8.3",
+    "vite": "5.4.21"
   }
 }
