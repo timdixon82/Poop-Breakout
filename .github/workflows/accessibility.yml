@@ -42,9 +42,6 @@ jobs:
       - name: Install matching Chrome and ChromeDriver versions
         run: npx browser-driver-manager install chrome
 
-      - name: Install Chrome for Pa11y (Puppeteer)
-        run: npx puppeteer browsers install chrome
-
       - name: Serve the built site
         run: python3 -m http.server 8080 --directory dist &
 
@@ -52,6 +49,8 @@ jobs:
         run: npx wait-on http://localhost:8080 --timeout 15000
 
       - name: Pa11y at WCAG 2.2 AAA
+        env:
+          PUPPETEER_EXECUTABLE_PATH: /usr/bin/google-chrome-stable
         run: pa11y --standard WCAG2AAA "http://localhost:8080/Poop-Breakout/"
 
       - name: axe-core at WCAG 2.2 AAA
