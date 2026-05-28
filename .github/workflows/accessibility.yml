@@ -37,17 +37,41 @@ jobs:
         run: npm run build
 
       - name: Install accessibility tools
-        run: npm install -g pa11y @axe-core/cli wait-on browser-driver-manager
+        run: npm install -g pa11y @axe-core/cli@4.11.3 wait-on@8.0.1
 
-      - name: Install matching Chrome and ChromeDriver versions
-        run: npx browser-driver-manager install chrome
-
-      - name: Set Chrome and ChromeDriver paths for accessibility tools
+      - name: Install matching ChromeDriver for axe-core
         run: |
-          CHROME=$(find /home/runner/.browser-driver-manager/chrome -name "chrome" -type f 2>/dev/null | head -1)
-          DRIVER=$(find /home/runner/.browser-driver-manager/chromedriver -name "chromedriver" -type f 2>/dev/null | head -1)
-          echo "A11Y_CHROME=${CHROME:-/usr/bin/google-chrome-stable}" >> $GITHUB_ENV
-          echo "A11Y_CHROMEDRIVER=${DRIVER}" >> $GITHUB_ENV
+          # Detect the full Chrome version from the binary ChromeDriver uses.
+          # Probe in the same order ChromeDriver checks binaries.
+          CHROME_FULL=""
+          for chrome_bin in /opt/google/chrome/chrome /opt/google/chrome/google-chrome \
+              /usr/bin/google-chrome /usr/bin/google-chrome-stable; do
+            if [ -x "$chrome_bin" ]; then
+              CHROME_FULL=$("$chrome_bin" --version 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' | head -1)
+              break
+            fi
+          done
+          if [ -z "$CHROME_FULL" ]; then
+            echo "WARNING: Could not detect Chrome version; axe will use system ChromeDriver." && exit 0
+          fi
+          echo "Detected Chrome ${CHROME_FULL}."
+          mkdir -p "$HOME/chromedriver-matching"
+          if curl -sfL \
+              "https://storage.googleapis.com/chrome-for-testing-public/${CHROME_FULL}/linux64/chromedriver-linux64.zip" \
+              -o /tmp/chromedriver.zip; then
+            unzip -q /tmp/chromedriver.zip -d /tmp/chromedriver-extract
+            install -m 0755 /tmp/chromedriver-extract/chromedriver-linux64/chromedriver \
+              "$HOME/chromedriver-matching/chromedriver"
+            echo "CHROMEDRIVER_PATH=$HOME/chromedriver-matching/chromedriver" >> "$GITHUB_ENV"
+            echo "Installed ChromeDriver ${CHROME_FULL}."
+          else
+            echo "WARNING: CDN download failed; axe will use system ChromeDriver."
+          fi
+
+      - name: Build CI pa11y config with system Chrome path
+        run: |
+          CHROME=$(which google-chrome-stable 2>/dev/null || which google-chrome 2>/dev/null || which chromium 2>/dev/null)
+          jq --arg chrome "$CHROME" '.chromeLaunchConfig.executablePath = $chrome' pa11y.json > pa11y.ci.json
 
       - name: Serve the built site
         run: python3 -m http.server 8080 --directory dist &
@@ -56,9 +80,12 @@ jobs:
         run: npx wait-on http://localhost:8080 --timeout 15000
 
       - name: Pa11y at WCAG 2.2 AAA
-        env:
-          PUPPETEER_EXECUTABLE_PATH: ${{ env.A11Y_CHROME }}
-        run: pa11y --standard WCAG2AAA "http://localhost:8080/Poop-Breakout/"
+        run: pa11y --standard WCAG2AAA --config pa11y.ci.json "http://localhost:8080/Poop-Breakout/"
 
       - name: axe-core at WCAG 2.2 AAA
-        run: axe "http://localhost:8080/Poop-Breakout/" --tags wcag2a,wcag2aa,wcag2aaa,wcag22aa,wcag22aaa --chrome-options="no-sandbox" --chromedriver-path "$A11Y_CHROMEDRIVER"
+        run: |
+          if [ -n "${CHROMEDRIVER_PATH:-}" ]; then
+            axe "http://localhost:8080/Poop-Breakout/" --tags wcag2a,wcag2aa,wcag2aaa,wcag22aa,wcag22aaa --chrome-options="no-sandbox" --chromedriver-path "$CHROMEDRIVER_PATH"
+          else
+            axe "http://localhost:8080/Poop-Breakout/" --tags wcag2a,wcag2aa,wcag2aaa,wcag22aa,wcag22aaa --chrome-options="no-sandbox"
+          fi
