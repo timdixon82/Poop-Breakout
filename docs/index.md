@@ -12,6 +12,9 @@ This page catalogues every wiki page in the Poop Breakout project wiki. It is or
 | [Coding standards](coding-standards.md) | Project-specific coding standards. Builds on the global team standard. |
 | [Release process](release-process.md) | Branching, pull request lifecycle, merge gate, and deployment. |
 | [Privacy](privacy.md) | Analytics and data retention policy. |
+| [Requirements](requirements.md) | Functional and non-functional requirements for this project. |
+| [Security review](security-review.md) | OWASP Top 10 assessment, findings, and release condition. |
+| [Code review](code-review.md) | Jed's penetration test and code review record. |
 
 ## Decisions
 

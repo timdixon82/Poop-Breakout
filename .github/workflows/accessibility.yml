@@ -1,13 +1,28 @@
-# Accessibility checks at WCAG 2.2 AAA using axe-core and Pa11y.
+# Accessibility checks at WCAG 2.2 AAA using Pa11y and axe-core.
 #
-# Runs on every pull request. Builds the Vite project, then serves the dist/
-# folder on port 8080, then runs both tools against it.
+# Builds the Vite project, then serves the dist/ folder on port 8080,
+# then runs both tools against it.
 #
 # Note: the canvas game area will report accessibility gaps detected by Carol's
 # baseline audit. These gaps are documented as accepted exceptions at
 # docs/exceptions/ACC-001-canvas-game-accessibility.md. The pa11y and axe
 # runs are still required so that the HTML overlay surfaces (start, game-over,
 # level-complete, win screens) pass the automated checks.
+#
+# Chrome version drift fix:
+#   GitHub Actions updates the runner's system Chrome frequently.
+#   Two-part fix:
+#   1. Pa11y: generate pa11y.ci.json at CI time, overriding
+#      chromeLaunchConfig.executablePath to the system Chrome path.
+#   2. axe-core: detect the full 4-part Chrome version from the binary,
+#      download the exact matching ChromeDriver from the Chrome for Testing
+#      CDN (storage.googleapis.com/chrome-for-testing-public), and pass it
+#      via --chromedriver-path. Falls back to system ChromeDriver if the CDN
+#      download fails.
+#
+# Accessibility tool versions (pa11y, @axe-core/cli, wait-on) are managed
+# in .github/accessibility-tools/package.json so Dependabot can track and
+# propose version bumps automatically.
 #
 # No untrusted GitHub context variables are used in run steps.
 # Action SHAs verified on 2026-05-23.
@@ -21,6 +36,7 @@ permissions:
 
 jobs:
   accessibility:
+    name: Pa11y and axe at WCAG 2.2 AAA
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
@@ -37,28 +53,62 @@ jobs:
         run: npm run build
 
       - name: Install accessibility tools
-        run: npm install -g pa11y @axe-core/cli wait-on browser-driver-manager
+        # Tools are managed in .github/accessibility-tools/package.json so
+        # Dependabot can track and propose version bumps automatically.
+        run: npm ci
+        working-directory: .github/accessibility-tools
 
-      - name: Install matching Chrome and ChromeDriver versions
-        run: npx browser-driver-manager install chrome
+      - name: Add accessibility tools to PATH
+        run: echo "$GITHUB_WORKSPACE/.github/accessibility-tools/node_modules/.bin" >> "$GITHUB_PATH"
 
-      - name: Set Chrome and ChromeDriver paths for accessibility tools
+      - name: Install matching ChromeDriver for axe-core
         run: |
-          CHROME=$(find /home/runner/.browser-driver-manager/chrome -name "chrome" -type f 2>/dev/null | head -1)
-          DRIVER=$(find /home/runner/.browser-driver-manager/chromedriver -name "chromedriver" -type f 2>/dev/null | head -1)
-          echo "A11Y_CHROME=${CHROME:-/usr/bin/google-chrome-stable}" >> $GITHUB_ENV
-          echo "A11Y_CHROMEDRIVER=${DRIVER}" >> $GITHUB_ENV
+          # Detect the full Chrome version from the binary ChromeDriver uses.
+          # Probe in the same order ChromeDriver checks binaries.
+          CHROME_FULL=""
+          for chrome_bin in /opt/google/chrome/chrome /opt/google/chrome/google-chrome \
+              /usr/bin/google-chrome /usr/bin/google-chrome-stable; do
+            if [ -x "$chrome_bin" ]; then
+              CHROME_FULL=$("$chrome_bin" --version 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' | head -1)
+              break
+            fi
+          done
+          if [ -z "$CHROME_FULL" ]; then
+            echo "WARNING: Could not detect Chrome version; axe will use system ChromeDriver." && exit 0
+          fi
+          echo "Detected Chrome ${CHROME_FULL}."
+          # Download the exact matching ChromeDriver from the Chrome for Testing CDN.
+          mkdir -p "$HOME/chromedriver-matching"
+          if curl -sfL \
+              "https://storage.googleapis.com/chrome-for-testing-public/${CHROME_FULL}/linux64/chromedriver-linux64.zip" \
+              -o /tmp/chromedriver.zip; then
+            unzip -q /tmp/chromedriver.zip -d /tmp/chromedriver-extract
+            install -m 0755 /tmp/chromedriver-extract/chromedriver-linux64/chromedriver \
+              "$HOME/chromedriver-matching/chromedriver"
+            echo "CHROMEDRIVER_PATH=$HOME/chromedriver-matching/chromedriver" >> "$GITHUB_ENV"
+            echo "Installed ChromeDriver ${CHROME_FULL}."
+          else
+            echo "WARNING: CDN download failed; axe will use system ChromeDriver."
+          fi
+
+      - name: Build CI pa11y config with system Chrome path
+        run: |
+          CHROME=$(which google-chrome-stable 2>/dev/null || which google-chrome 2>/dev/null || which chromium 2>/dev/null)
+          jq --arg chrome "$CHROME" '.chromeLaunchConfig.executablePath = $chrome' pa11y.json > pa11y.ci.json
 
       - name: Serve the built site
         run: python3 -m http.server 8080 --directory dist &
 
-      - name: Wait for server to be ready
-        run: npx wait-on http://localhost:8080 --timeout 15000
+      - name: Wait for the server to be ready
+        run: wait-on http://localhost:8080 --timeout 15000
 
       - name: Pa11y at WCAG 2.2 AAA
-        env:
-          PUPPETEER_EXECUTABLE_PATH: ${{ env.A11Y_CHROME }}
-        run: pa11y --standard WCAG2AAA "http://localhost:8080/Poop-Breakout/"
+        run: pa11y --standard WCAG2AAA --config pa11y.ci.json "http://localhost:8080/Poop-Breakout/"
 
       - name: axe-core at WCAG 2.2 AAA
-        run: axe "http://localhost:8080/Poop-Breakout/" --tags wcag2a,wcag2aa,wcag2aaa,wcag22aa,wcag22aaa --chrome-options="no-sandbox" --chromedriver-path "$A11Y_CHROMEDRIVER"
+        run: |
+          if [ -n "${CHROMEDRIVER_PATH:-}" ]; then
+            axe "http://localhost:8080/Poop-Breakout/" --tags wcag2a,wcag2aa,wcag2aaa,wcag22aa,wcag22aaa --chrome-options=no-sandbox --chromedriver-path "$CHROMEDRIVER_PATH"
+          else
+            axe "http://localhost:8080/Poop-Breakout/" --tags wcag2a,wcag2aa,wcag2aaa,wcag22aa,wcag22aaa --chrome-options=no-sandbox
+          fi
