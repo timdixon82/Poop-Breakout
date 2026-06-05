@@ -1,13 +1,13 @@
 # Security checks: Semgrep, Trivy, and dependency review.
-# Runs on every pull request and weekly on Monday morning.
-# No untrusted context variables are used in run steps.
-# Action SHAs verified on 2026-05-23.
+#
+# Action versions were verified against GitHub and pinned to commit SHAs
+# on 2026-05-21. The version tag is in the trailing comment.
 
 name: Security
 on:
   pull_request:
   schedule:
-    - cron: '0 6 * * 1'
+    - cron: '0 6 * * 1'  # weekly, Monday morning
 
 permissions:
   contents: read
@@ -42,3 +42,6 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
       - uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294  # v5.0.0
+
+  # Note for PHP projects: CodeQL does not support PHP. Add a PHP static
+  # analysis job here, for example PHPStan or Psalm, in place of CodeQL.

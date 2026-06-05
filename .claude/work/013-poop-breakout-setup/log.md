@@ -22,3 +22,6 @@ Next: Sonja runs the architecture-and-security conformance check (section 7 of t
 - [2026-05-31 13:42:18] subagent completed
 - [2026-05-31 13:45:19] subagent completed
 - [2026-05-31 13:56:24] subagent completed
+- [2026-05-31 14:04:24] subagent completed
+- [2026-06-05 14:15:36] subagent completed
+- [2026-06-05 14:20:54] subagent completed
