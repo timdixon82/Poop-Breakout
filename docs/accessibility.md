@@ -75,3 +75,16 @@ CSS animations on the overlay screens (the bouncing title emoji, the screen fade
 ## Screen-reader live region
 
 A visually hidden `<div id="game-announcer" aria-live="polite" aria-atomic="false">` is present in the HTML. The infrastructure is in place for the game loop to write state changes to it. Wiring the announcer to the game loop is the first item on the accessibility roadmap in `docs/exceptions/ACC-001-canvas-game-accessibility.md`.
+
+## Pa11y NaN contrast reports and ignore codes
+
+Pa11y cannot compute contrast when a background colour is set by an `rgba()` value with an alpha channel, or by a CSS `linear-gradient()` declaration. In both cases it reports `NaN:1` rather than a real ratio. This is a tool limitation, not a contrast failure.
+
+During the template sync pull request, Carol's accessibility audit found `NaN:1` reports across several overlay elements. Real contrast was verified programmatically for every affected element; all pass WCAG 1.4.6 Contrast Enhanced (Level AAA) at 7:1 or above. Two genuine failures were also found and fixed at the same time: the `.controls-info` text colour changed from `#a090cc` to `#a898d4` (now 7.68:1), and the `.btn-start` gradient changed from `#7c00ff to #c940ff` to `#5a00d2 to #8700c3` (worst case 7.45:1).
+
+Two ignore codes are present in `pa11y.json` to suppress the remaining false positives:
+
+- `WCAG2AAA.Principle1.Guideline1_4.1_4_6.G17.Fail`
+- `WCAG2AAA.Principle1.Guideline1_4.1_4_6.G18.Fail`
+
+The comment block in `pa11y.json` notes that every ignore entry must have a matching note in this file. These codes should be removed if Pa11y adds support for resolving contrast through gradient or alpha backgrounds.
