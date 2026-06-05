@@ -172,7 +172,7 @@ body {
 
 .controls-info {
   margin-bottom: 20px;
-  color: #a090cc;
+  color: #a898d4;
   font-size: 12px;
   line-height: 2;
 }
@@ -208,7 +208,7 @@ body {
   font-family: 'Press Start 2P', monospace;
   font-size: 11px;
   color: #fff;
-  background: linear-gradient(135deg, #7c00ff, #c940ff);
+  background: linear-gradient(135deg, #5a00d2, #8700c3);
   border: none;
   border-radius: 12px;
   padding: 16px 26px; /* was 14px — raised to meet WCAG 2.5.5 AAA 44 px touch target */
