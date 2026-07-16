@@ -14,6 +14,15 @@ import { Ball, Brick, GameData, Paddle } from "./entities";
 import { clamp, lerp, normalizeVec2, randomRange, spawnParticles } from "./utils";
 import { drawHUD } from "./ui";
 import { generateLayout, getHitValues, getLevelSpeedMult } from "./levelgen";
+import {
+  allBricksCleared,
+  checkBrickCollision,
+  checkPaddleCollision,
+  computeBrickHitScore,
+  isFinalLevel,
+  loseLife,
+  resolveWallBounce,
+} from "./physics";
 
 // ─── Emoji rendering via offscreen canvas ─────────────────────────────────────
 
@@ -363,33 +372,27 @@ export class PoopBreakout {
     ball.y += ball.dy;
 
     // Wall collisions
-    if (ball.x - ball.radius < 0)            { ball.x = ball.radius;                 ball.dx =  Math.abs(ball.dx); }
-    if (ball.x + ball.radius > CANVAS_WIDTH)  { ball.x = CANVAS_WIDTH - ball.radius; ball.dx = -Math.abs(ball.dx); }
-    if (ball.y - ball.radius < 48)            { ball.y = 48 + ball.radius;            ball.dy =  Math.abs(ball.dy); }
+    const wallBounce = resolveWallBounce(ball, CANVAS_WIDTH, 48);
+    ball.x = wallBounce.x;
+    ball.y = wallBounce.y;
+    ball.dx = wallBounce.dx;
+    ball.dy = wallBounce.dy;
 
     // Paddle collision
-    if (
-      ball.dy > 0 &&
-      ball.y + ball.radius >= paddle.y &&
-      ball.y - ball.radius <= paddle.y + paddle.height &&
-      ball.x >= paddle.x - ball.radius &&
-      ball.x <= paddle.x + paddle.width + ball.radius
-    ) {
-      ball.y = paddle.y - ball.radius;
-      const hitRatio    = (ball.x - (paddle.x + paddle.width / 2)) / (paddle.width / 2);
-      const bounceAngle = hitRatio * (Math.PI / 3);
-      const currentSpeed = Math.hypot(ball.dx, ball.dy);
-      ball.dx = Math.sin(bounceAngle) * currentSpeed;
-      ball.dy = -Math.abs(Math.cos(bounceAngle) * currentSpeed);
+    const paddleBounce = checkPaddleCollision(ball, paddle);
+    if (paddleBounce) {
+      ball.y  = paddleBounce.y;
+      ball.dx = paddleBounce.dx;
+      ball.dy = paddleBounce.dy;
     }
 
     // Fell off bottom
     if (ball.y - ball.radius > CANVAS_HEIGHT) {
-      d.lives--;
+      const { lives, gameOver } = loseLife(d.lives);
+      d.lives      = lives;
       d.combo      = 0;
       d.comboTimer = 0;
-      if (d.lives <= 0) {
-        d.lives = 0;
+      if (gameOver) {
         this.state = GameState.GAME_OVER;
         if (d.score > d.highScore) d.highScore = d.score;
         setTimeout(() => this.onGameOver?.(d.score, d.highScore, d.level), 400);
@@ -405,10 +408,9 @@ export class PoopBreakout {
     this.checkBrickCollisions();
 
     // Check level clear
-    const alive = d.bricks.flat().some(b => b.alive);
-    if (!alive) {
+    if (allBricksCleared(d.bricks)) {
       this.state = GameState.LEVEL_CLEAR;
-      if (d.level >= TOTAL_LEVELS) {
+      if (isFinalLevel(d.level, TOTAL_LEVELS)) {
         if (d.score > d.highScore) d.highScore = d.score;
         this.onSaveNeeded?.();
         setTimeout(() => this.onWin?.(d.score), 600);
@@ -429,29 +431,13 @@ export class PoopBreakout {
       for (const brick of row) {
         if (!brick.alive) continue;
 
-        const bLeft   = brick.x;
-        const bRight  = brick.x + brick.width;
-        const bTop    = brick.y;
-        const bBottom = brick.y + brick.height;
+        const collision = checkBrickCollision(ball, brick);
+        if (!collision) continue;
 
-        const closestX = clamp(ball.x, bLeft, bRight);
-        const closestY = clamp(ball.y, bTop, bBottom);
-        const distX    = ball.x - closestX;
-        const distY    = ball.y - closestY;
-        const distSq   = distX * distX + distY * distY;
-
-        if (distSq > ball.radius * ball.radius) continue;
-
-        const overlapLeft   = ball.x + ball.radius - bLeft;
-        const overlapRight  = bRight  - (ball.x - ball.radius);
-        const overlapTop    = ball.y + ball.radius - bTop;
-        const overlapBottom = bBottom - (ball.y - ball.radius);
-        const minOverlap    = Math.min(overlapLeft, overlapRight, overlapTop, overlapBottom);
-
-        if      (minOverlap === overlapLeft)  { ball.dx = -Math.abs(ball.dx); ball.x = bLeft  - ball.radius; }
-        else if (minOverlap === overlapRight) { ball.dx =  Math.abs(ball.dx); ball.x = bRight + ball.radius; }
-        else if (minOverlap === overlapTop)   { ball.dy = -Math.abs(ball.dy); ball.y = bTop   - ball.radius; }
-        else                                  { ball.dy =  Math.abs(ball.dy); ball.y = bBottom + ball.radius; }
+        ball.x  = collision.x;
+        ball.y  = collision.y;
+        ball.dx = collision.dx;
+        ball.dy = collision.dy;
 
         brick.hits--;
         brick.shakeTimer = 8;
@@ -464,8 +450,7 @@ export class PoopBreakout {
           brick.alive     = false;
           brick.scaleAnim = 1;
 
-          const comboBonus = Math.floor(ptsPerHit * (d.combo * 0.15));
-          const total      = ptsPerHit + comboBonus;
+          const { comboBonus, total } = computeBrickHitScore(ptsPerHit, d.combo);
           d.score += total;
           if (d.score > d.highScore) d.highScore = d.score;
 
