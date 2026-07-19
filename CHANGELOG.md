@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.1](https://github.com/timdixon82/Poop-Breakout/compare/v1.1.0...v1.1.1) (2026-07-16)
+
+
+### Bug Fixes
+
+* add dependabot cooldown block to satisfy semgrep dependabot-missing-cooldown rule ([#27](https://github.com/timdixon82/Poop-Breakout/issues/27)) ([8250e0e](https://github.com/timdixon82/Poop-Breakout/commit/8250e0e9cd8fc6f52e54d2cc4dd2c7b09262006f))
+
 ## [1.1.0](https://github.com/timdixon82/Poop-Breakout/compare/v1.0.0...v1.1.0) (2026-06-05)
 
 
