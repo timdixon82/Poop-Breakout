@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.2](https://github.com/timdixon82/Poop-Breakout/compare/v1.1.1...v1.1.2) (2026-07-23)
+
+
+### Bug Fixes
+
+* bump fast-uri and brace-expansion to patch high-severity advisories ([#42](https://github.com/timdixon82/Poop-Breakout/issues/42)) ([9bc3aed](https://github.com/timdixon82/Poop-Breakout/commit/9bc3aedce4ba725335f75303cf5dc17704498dde))
+
 ## [1.1.1](https://github.com/timdixon82/Poop-Breakout/compare/v1.1.0...v1.1.1) (2026-07-16)
 
 
