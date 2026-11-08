@@ -21,7 +21,7 @@ The project received its own `.claude/` configuration: agents (all eight), comma
 
 A read-only bidirectional reconciliation report was produced at `/Users/timdixon/Code/AgentTeam/.claude/work/028-per-project-claude-isolation/Poop-Breakout-reconciliation.md`. Tim approved all 15 recommended actions. Changes applied:
 
-- Added: CLAUDE.md, .editorconfig, .github/dependabot.yml, .github/pull_request_template.md, .github/accessibility-tools/ (pa11y + axe Dependabot-tracked), docs/code-review.md, docs/requirements.md, docs/security-review.md, docs/patterns/.gitkeep
+- Added: CLAUDE.md, .editorconfig, .github/dependabot.yml, .github/pull_request_template.md, ci-tools/accessibility-tools/ (pa11y + axe Dependabot-tracked; moved from .github/accessibility-tools/ on 2026-11-08), docs/code-review.md, docs/requirements.md, docs/security-review.md, docs/patterns/.gitkeep
 - Updated: pa11y.json (_comment block + ignore: []), .gitignore (comprehensive replacement including pa11y.ci.json), docs/index.md (new stub rows)
 - Fixed security.yml: semgrep ci replaced with semgrep scan --config p/default --error (no paid token)
 - Fixed deploy.yml: four action tags replaced with SHA pins, configure-pages step added, workflow_dispatch added

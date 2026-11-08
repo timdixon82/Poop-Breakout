@@ -38,3 +38,7 @@ Carol ran a WCAG 2.2 AAA test pass and found three blockers: Pa11y CI sandbox fl
 ## [2026-05-23] ingest | Project wiki scaffolded
 
 Tad wrote the six missing project wiki files: `index.md`, `log.md`, `glossary.md`, `accessibility.md`, `coding-standards.md`, and `release-process.md`. All six files address Carol's blocker F-03. Committed on branch `chore/project-setup` alongside Sean's setup build.
+
+## [2026-11-08] decision | npm tool folders moved to ci-tools
+
+Moved `.github/lint-tools` and `.github/accessibility-tools` to `ci-tools/lint-tools` and `ci-tools/accessibility-tools`, because Dependabot cannot open npm update pull requests for folders under the root `.github` folder (error `dependency_file_not_supported`). The two npm entries in `.github/dependabot.yml` now point at the new folders, and `lint.yml` and `accessibility.yml` were refreshed from the template. `HANDOFF.md` records the move beside its historical line. The deploy workflow uses an allowlist, so `ci-tools` is not published.
