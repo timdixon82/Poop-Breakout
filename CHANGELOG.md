@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.3](https://github.com/timdixon82/Poop-Breakout/compare/v1.1.2...v1.1.3) (2026-11-12)
+
+
+### Bug Fixes
+
+* **deps:** clear open Dependabot alerts in dev dependencies ([#59](https://github.com/timdixon82/Poop-Breakout/issues/59)) ([908f536](https://github.com/timdixon82/Poop-Breakout/commit/908f53648b49cdb6b1a980999f87010981ad6818))
+
 ## [1.1.2](https://github.com/timdixon82/Poop-Breakout/compare/v1.1.1...v1.1.2) (2026-07-23)
 
 
